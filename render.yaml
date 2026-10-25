@@ -1,0 +1,15 @@
+services:
+  - type: web
+    name: clasico-night-api
+    runtime: node
+    plan: free
+    buildCommand: npm install && npm run build -w server
+    startCommand: npm start -w server
+    healthCheckPath: /api/health
+    envVars:
+      - key: NODE_VERSION
+        value: "20"
+      - key: ADMIN_KEY
+        generateValue: true
+      - key: CLIENT_ORIGIN
+        sync: false

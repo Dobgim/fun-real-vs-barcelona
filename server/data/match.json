@@ -1,0 +1,94 @@
+{
+  "title": "El Clásico",
+  "competition": "La Liga",
+  "kickoff": "2026-10-25T20:00:00Z",
+  "venue": "Barcelona (home)",
+  "home": { "name": "FC Barcelona", "short": "Barça", "code": "BAR" },
+  "away": { "name": "Real Madrid", "short": "Madrid", "code": "RMA" },
+  "record": {
+    "played": 264,
+    "homeWins": 106,
+    "draws": 52,
+    "awayWins": 106,
+    "asOf": "May 2026",
+    "note": "Official matches, per Wikipedia as of May 2026. Some sources count one match differently and have Madrid ahead 107–106."
+  },
+  "lastSeven": ["W", "W", "W", "L", "W", "W", "W"],
+  "results": [
+    { "date": "2026-05-10", "competition": "La Liga", "homeCode": "BAR", "homeGoals": 2, "awayGoals": 0, "awayCode": "RMA" },
+    { "date": "2026-01-11", "competition": "Supercopa final", "homeCode": "BAR", "homeGoals": 3, "awayGoals": 2, "awayCode": "RMA" },
+    { "date": "2025-10-26", "competition": "La Liga", "homeCode": "RMA", "homeGoals": 2, "awayGoals": 1, "awayCode": "BAR" },
+    { "date": "2025-05-11", "competition": "La Liga", "homeCode": "BAR", "homeGoals": 4, "awayGoals": 3, "awayCode": "RMA" },
+    { "date": "2025-04-26", "competition": "Copa del Rey final", "homeCode": "BAR", "homeGoals": 3, "awayGoals": 2, "awayCode": "RMA" },
+    { "date": "2025-01-12", "competition": "Supercopa final", "homeCode": "RMA", "homeGoals": 2, "awayGoals": 5, "awayCode": "BAR" },
+    { "date": "2024-10-26", "competition": "La Liga", "homeCode": "RMA", "homeGoals": 0, "awayGoals": 4, "awayCode": "BAR" }
+  ],
+  "famousWins": [
+    { "score": "2–6", "label": "At the Bernabéu", "date": "2009-05-02" },
+    { "score": "5–0", "label": "La Manita", "date": "2010-11-29" },
+    { "score": "0–4", "label": "At the Bernabéu", "date": "2024-10-26" },
+    { "score": "2–5", "label": "Supercopa final", "date": "2025-01-12" },
+    { "score": "3–2", "label": "Copa del Rey final", "date": "2025-04-26" },
+    { "score": "4–3", "label": "La Liga", "date": "2025-05-11" },
+    { "score": "3–2", "label": "Supercopa final", "date": "2026-01-11" },
+    { "score": "2–0", "label": "La Liga", "date": "2026-05-10" }
+  ],
+  "winProbability": { "home": 61, "draw": 17, "away": 22 },
+  "gameRatings": {
+    "Mbappé": 91,
+    "Courtois": 90,
+    "Bellingham": 90,
+    "Valverde": 87,
+    "Rodri": 90,
+    "Lamine Yamal": 90,
+    "Pedri": 90,
+    "Raphinha": 88
+  },
+  "lineups": {
+    "home": {
+      "coach": "Hansi Flick",
+      "formation": "4-2-3-1",
+      "players": [
+        { "id": "home:joan-garcia", "name": "Joan García" },
+        { "id": "home:espart", "name": "Espart" },
+        { "id": "home:cubarsi", "name": "Cubarsí" },
+        { "id": "home:gerard-martin", "name": "Gerard Martín" },
+        { "id": "home:cancelo", "name": "Cancelo" },
+        { "id": "home:rodri", "name": "Rodri" },
+        { "id": "home:pedri", "name": "Pedri" },
+        { "id": "home:lamine-yamal", "name": "Lamine Yamal" },
+        { "id": "home:fermin-lopez", "name": "Fermín López" },
+        { "id": "home:gordon", "name": "Gordon", "doubt": "Adeyemi may start" },
+        { "id": "home:raphinha", "name": "Raphinha" }
+      ],
+      "subs": [],
+      "out": ["Kvaratskhelia", "Olmo", "Eric García", "Christensen"],
+      "notes": ["Koundé doubtful"]
+    },
+    "away": {
+      "coach": "José Mourinho",
+      "formation": "4-2-3-1",
+      "players": [
+        { "id": "away:courtois", "name": "Courtois", "doubt": "Flu — Lunin if he misses out" },
+        { "id": "away:valverde", "name": "Valverde" },
+        { "id": "away:konate", "name": "Konaté" },
+        { "id": "away:huijsen", "name": "Huijsen" },
+        { "id": "away:cucurella", "name": "Cucurella" },
+        { "id": "away:tchouameni", "name": "Tchouaméni" },
+        { "id": "away:camavinga", "name": "Camavinga", "doubt": "Some sources have Bernardo Silva" },
+        { "id": "away:arda-guler", "name": "Arda Güler" },
+        { "id": "away:bellingham", "name": "Bellingham" },
+        { "id": "away:diomande", "name": "Diomande" },
+        { "id": "away:mbappe", "name": "Mbappé" }
+      ],
+      "subs": [],
+      "out": ["Vinícius Jr (suspended)", "Rodrygo", "Mendy", "Asencio"],
+      "notes": []
+    }
+  },
+  "sources": [
+    { "label": "Wikipedia — El Clásico (head-to-head record)", "url": "https://en.wikipedia.org/wiki/El_Cl%C3%A1sico" },
+    { "label": "Wikipedia — List of El Clásico matches", "url": "https://en.wikipedia.org/wiki/List_of_El_Cl%C3%A1sico_matches" },
+    { "label": "EA Sports FC 27 ratings", "url": "https://www.ea.com/games/ea-sports-fc/ratings" }
+  ]
+}
