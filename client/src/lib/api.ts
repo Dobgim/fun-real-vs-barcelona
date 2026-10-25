@@ -1,7 +1,10 @@
 import type { StateResponse } from '@shared/types';
 import { visitorId } from './visitor';
 
-export const API_URL = (import.meta.env.VITE_API_URL ?? 'http://localhost:4000').replace(/\/$/, '');
+// Empty or unset VITE_API_URL: talk to the server the page was loaded from (the Render service serving
+// both site and API), or to the local dev server.
+const configured = (import.meta.env.VITE_API_URL ?? '').trim().replace(/\/$/, '');
+export const API_URL = configured || (import.meta.env.DEV ? 'http://localhost:4000' : window.location.origin);
 
 export class ApiError extends Error {
   constructor(public status: number, message: string) {

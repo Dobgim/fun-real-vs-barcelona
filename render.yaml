@@ -3,7 +3,8 @@ services:
     name: barcelonavsrealmadridfans-api
     runtime: node
     plan: free
-    buildCommand: npm install --include=dev && npm run build -w server
+    # Builds the API and the website; the server serves both, so the Render URL is a complete site.
+    buildCommand: npm install --include=dev && npm run build -w server && VITE_API_URL= npm run build -w client
     startCommand: npm start -w server
     healthCheckPath: /api/health
     envVars:
@@ -14,4 +15,4 @@ services:
       - key: ADMIN_KEY
         generateValue: true
       - key: CLIENT_ORIGIN
-        value: https://barcelonavsrealmadridfans.vercel.app,https://barcelonavsrealmadridfans-*.vercel.app
+        value: https://*.vercel.app

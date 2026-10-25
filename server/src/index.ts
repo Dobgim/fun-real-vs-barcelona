@@ -1,6 +1,7 @@
 import { createServer } from 'node:http';
 import { timingSafeEqual } from 'node:crypto';
 import { existsSync } from 'node:fs';
+import { fileURLToPath } from 'node:url';
 import express, { type NextFunction, type Request, type Response } from 'express';
 import cors from 'cors';
 import rateLimit from 'express-rate-limit';
@@ -43,8 +44,9 @@ const ORIGIN_PATTERNS = ORIGINS.map((o) => new RegExp(`^${o.replace(/[.+?^${}()|
 const DEV_ORIGIN = /^https?:\/\/(localhost|127\.0\.0\.1|10(\.\d+){3}|192\.168(\.\d+){2}|172\.(1[6-9]|2\d|3[01])(\.\d+){2})(:\d+)?$/;
 
 const warned = new Set<string>();
-function originAllowed(origin: string | undefined) {
+function originAllowed(origin: string | undefined, host?: string) {
   if (!origin) return true; // same-origin, curl, server-to-server
+  if (host && origin.replace(/^https?:\/\//, '') === host) return true; // page served by this server
   const ok = ORIGIN_PATTERNS.some((re) => re.test(origin)) || (!IS_PROD && DEV_ORIGIN.test(origin));
   if (!ok && !warned.has(origin)) {
     warned.add(origin);
@@ -64,7 +66,7 @@ const io = new Server(http, {
   cors: { origin: corsOrigin },
   // WebSockets skip browser CORS checks, so apply the same rule here; otherwise a blocked
   // origin would get live updates but fail on every write.
-  allowRequest: (req, cb) => cb(null, originAllowed(req.headers.origin)),
+  allowRequest: (req, cb) => cb(null, originAllowed(req.headers.origin, req.headers.host)),
 });
 
 // ---------- broadcasting ----------
@@ -345,6 +347,16 @@ app.post(
     return next;
   }),
 );
+
+// ---------- website ----------
+
+// When the client has been built (client/dist), serve it too, so one Render service can host the whole site.
+const clientDist = fileURLToPath(new URL('../../client/dist', import.meta.url));
+if (existsSync(clientDist)) {
+  app.use(express.static(clientDist, { maxAge: '1h', index: false }));
+  app.get(/^(?!\/api\/|\/socket\.io\/).*/, (_req, res) => res.sendFile('index.html', { root: clientDist }));
+  console.log(`Serving the website from ${clientDist}`);
+}
 
 // ---------- errors ----------
 

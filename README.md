@@ -39,31 +39,20 @@ To test on your phone on the same Wi-Fi: run `npm run dev -w client -- --host`, 
 
 ## Deploy
 
-### Server on Render
-The client's production build already points at `https://barcelonavsrealmadridfans-api.onrender.com`
-(`client/.env.production`), and `render.yaml` uses that service name with `CLIENT_ORIGIN` pre-filled.
-If Render gives the service a different URL, update `client/.env.production` (or set `VITE_API_URL` on Vercel).
+### Easiest: everything on Render (site + API on one URL)
+1. https://dashboard.render.com/blueprint/new → pick this repo → **Apply** (uses `render.yaml`).
+2. When it's live, open the service URL. That URL *is* the site; `/admin` is the control room.
+   The admin password is the generated `ADMIN_KEY` under the service's **Environment** tab.
+3. Free tier sleeps after 15 min idle: open it a few minutes before kick-off. Don't redeploy mid-match
+   (without a paid disk the SQLite data resets on restart).
 
-1. New **Web Service** from this repo (or use `render.yaml` as a Blueprint).
-2. Root directory: *(repo root)*. Runtime: Node.
-3. Build command: `npm install --include=dev && npm run build -w server`
-4. Start command: `npm start -w server`
-5. Env vars: `ADMIN_KEY`, `CLIENT_ORIGIN` (your Vercel URL, e.g. `https://fun-real-vs-barcelona.vercel.app`; add `,https://*.vercel.app` to also allow preview links), `NODE_ENV=production`, `NODE_VERSION=20`.
-6. Optional: attach a disk at `/var/data` and set `DB_PATH=/var/data/clasico.db`. Without a disk the
-   database resets whenever the service restarts or redeploys, which is fine for one night, but don't
-   redeploy mid-match.
-
-Render's free tier sleeps after 15 minutes idle; open the site once before kick-off to wake it.
-
-### Server on Railway
-New project from the repo, same build/start commands as above, add the env vars, and add a volume
-mounted at `/data` with `DB_PATH=/data/clasico.db`.
-
-### Client on Vercel
-1. New project from the repo. **Root directory: `client`**. Framework preset: Vite.
-2. Env var: `VITE_API_URL` = your server URL (no trailing slash).
-3. Deploy. `client/vercel.json` rewrites every path to `index.html` so `/admin` works.
-4. Put the Vercel URL into the server's `CLIENT_ORIGIN` and restart the server.
+### Optional: website on Vercel too
+Vercel can only host the **website** (static files). It cannot run the server: Socket.IO and SQLite need
+a long-running process, which is why deploying `server/` there fails with `FUNCTION_INVOCATION_FAILED`.
+- Root Directory: repo root, `client` or `server` all work; the `vercel.json` in each builds the website only.
+- The Vercel build talks to `https://barcelonavsrealmadridfans-api.onrender.com` (`client/.env.production`).
+  If your Render URL differs, set `VITE_API_URL` in Vercel's environment variables and redeploy.
+- `render.yaml` allows any `https://*.vercel.app` origin, so new Vercel projects work without changes.
 
 ## On match night (from your phone)
 
