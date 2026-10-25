@@ -42,9 +42,9 @@ To test on your phone on the same Wi-Fi: run `npm run dev -w client -- --host`, 
 ### Server on Render
 1. New **Web Service** from this repo (or use `render.yaml` as a Blueprint).
 2. Root directory: *(repo root)*. Runtime: Node.
-3. Build command: `npm install && npm run build -w server`
+3. Build command: `npm install --include=dev && npm run build -w server`
 4. Start command: `npm start -w server`
-5. Env vars: `ADMIN_KEY`, `CLIENT_ORIGIN` (your Vercel URL), `NODE_VERSION=20`.
+5. Env vars: `ADMIN_KEY`, `CLIENT_ORIGIN` (your Vercel URL, e.g. `https://fun-real-vs-barcelona.vercel.app`; add `,https://*.vercel.app` to also allow preview links), `NODE_ENV=production`, `NODE_VERSION=20`.
 6. Optional: attach a disk at `/var/data` and set `DB_PATH=/var/data/clasico.db`. Without a disk the
    database resets whenever the service restarts or redeploys, which is fine for one night, but don't
    redeploy mid-match.

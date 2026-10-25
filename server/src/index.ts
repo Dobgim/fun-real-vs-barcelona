@@ -33,16 +33,39 @@ const ORIGINS = (process.env.CLIENT_ORIGIN ?? 'http://localhost:5250')
   .split(',')
   .map((o) => o.trim().replace(/\/$/, ''))
   .filter(Boolean);
+const IS_PROD = process.env.NODE_ENV === 'production';
 
 if (!ADMIN_KEY) console.warn('[warn] ADMIN_KEY is not set: /api/admin/* will reject every request.');
 
+// CLIENT_ORIGIN entries may use "*" as a wildcard (e.g. https://*.vercel.app for preview deploys).
+const ORIGIN_PATTERNS = ORIGINS.map((o) => new RegExp(`^${o.replace(/[.+?^${}()|[\]\\]/g, '\\$&').replace(/\*/g, '[^/]+')}$`));
+// Outside production, also allow localhost and private-network addresses (testing on a phone over Wi-Fi).
+const DEV_ORIGIN = /^https?:\/\/(localhost|127\.0\.0\.1|10(\.\d+){3}|192\.168(\.\d+){2}|172\.(1[6-9]|2\d|3[01])(\.\d+){2})(:\d+)?$/;
+
+const warned = new Set<string>();
+function originAllowed(origin: string | undefined) {
+  if (!origin) return true; // same-origin, curl, server-to-server
+  const ok = ORIGIN_PATTERNS.some((re) => re.test(origin)) || (!IS_PROD && DEV_ORIGIN.test(origin));
+  if (!ok && !warned.has(origin)) {
+    warned.add(origin);
+    console.warn(`[cors] blocked ${origin}. Add it to CLIENT_ORIGIN (currently: ${ORIGINS.join(', ')})`);
+  }
+  return ok;
+}
+const corsOrigin = (origin: string | undefined, cb: (err: Error | null, allow?: boolean) => void) => cb(null, originAllowed(origin));
+
 const app = express();
 app.set('trust proxy', 1);
-app.use(cors({ origin: ORIGINS }));
+app.use(cors({ origin: corsOrigin }));
 app.use(express.json({ limit: '32kb' }));
 
 const http = createServer(app);
-const io = new Server(http, { cors: { origin: ORIGINS } });
+const io = new Server(http, {
+  cors: { origin: corsOrigin },
+  // WebSockets skip browser CORS checks, so apply the same rule here; otherwise a blocked
+  // origin would get live updates but fail on every write.
+  allowRequest: (req, cb) => cb(null, originAllowed(req.headers.origin)),
+});
 
 // ---------- broadcasting ----------
 

@@ -28,7 +28,7 @@ export async function copyText(text: string) {
 }
 
 export function Predictions() {
-  const { data, me, patchMe, online, kickoff } = useStore();
+  const { data, me, patchMe, online, kickoff, refresh } = useStore();
   const p = data.predictions;
   const open = p.open && serverNow() < kickoff;
   const ft = data.score.status === 'ft';
@@ -57,6 +57,7 @@ export function Predictions() {
       await post('/predictions', { name, home, away });
       store.set('cn:name', name.trim());
       patchMe({ prediction: { name: name.trim(), home, away } });
+      refresh(); // show it on the leaderboard straight away; everyone else gets it via state:update
       setEditing(false);
       confetti({ count: 80, origin: { x: 0.5, y: 0.7 } });
     } catch (err) {
