@@ -83,6 +83,7 @@ export interface ScoreState {
   away: number;
   minute: string | null;
   ftAt: number | null; // epoch ms when status became full time
+  scorers: string[]; // player ids of goalscorers, one entry per goal
   updatedAt: number;
 }
 
@@ -90,6 +91,7 @@ export interface PredictionEntry {
   name: string;
   home: number;
   away: number;
+  scorer: string | null; // player id, 'none' for "no goalscorer", null if not picked
   points: number | null; // null until full time
 }
 
@@ -107,6 +109,7 @@ export interface PublicState {
     open: boolean;
     entries: PredictionEntry[];
     counts: { score: string; count: number }[];
+    scorerCounts: { scorer: string; count: number }[];
   };
   ratings: Record<string, RatingAgg>;
   ratingsOpen: boolean;
@@ -119,7 +122,7 @@ export interface PublicState {
 
 export interface MeState {
   side: Side | null;
-  prediction: { name: string; home: number; away: number } | null;
+  prediction: { name: string; home: number; away: number; scorer: string | null } | null;
   poll: PollChoice | null;
   ratings: Record<string, number>;
   nerves: number | null;

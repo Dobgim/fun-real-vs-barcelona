@@ -40,6 +40,10 @@ To test on your phone on the same Wi-Fi: run `npm run dev -w client -- --host`, 
 ## Deploy
 
 ### Server on Render
+The client's production build already points at `https://barcelonavsrealmadridfans-api.onrender.com`
+(`client/.env.production`), and `render.yaml` uses that service name with `CLIENT_ORIGIN` pre-filled.
+If Render gives the service a different URL, update `client/.env.production` (or set `VITE_API_URL` on Vercel).
+
 1. New **Web Service** from this repo (or use `render.yaml` as a Blueprint).
 2. Root directory: *(repo root)*. Runtime: Node.
 3. Build command: `npm install --include=dev && npm run build -w server`
@@ -68,7 +72,8 @@ Open `/admin`:
   Add substitutes under *Subs who came on* during the match so fans can rate them.
 - **Status**: *Live* at kick-off, *Half-time*, *Live* again, then *Full time* (this scores the predictions
   and starts the 2-hour fan-ratings countdown).
-- **Score**: tap *+ Barça goal* / *+ Madrid goal* (optionally type the minute first). A Barça goal fires
+- **Score**: pick the goalscorer (optional), then tap *+ Barça goal* / *+ Madrid goal* (optionally type the
+  minute first). Fans who picked that scorer get +1 point at full time; tap a scorer chip to remove a mistake. A Barça goal fires
   the full-screen GOOOL! + crowd roar for every visitor.
 
 Rules enforced by the server: predictions close at kick-off; fan ratings open at kick-off and close

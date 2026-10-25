@@ -12,9 +12,9 @@ const MATCH = matchJson as MatchData;
 export const FALLBACK: PublicState = {
   match: MATCH,
   lineups: { ...MATCH.lineups, confirmed: false },
-  score: { status: 'pre', home: 0, away: 0, minute: null, ftAt: null, updatedAt: 0 },
+  score: { status: 'pre', home: 0, away: 0, minute: null, ftAt: null, scorers: [], updatedAt: 0 },
   poll: { barca: 0, draw: 0, madrid: 0 },
-  predictions: { open: true, entries: [], counts: [] },
+  predictions: { open: true, entries: [], counts: [], scorerCounts: [] },
   ratings: {},
   ratingsOpen: false,
   reactions: { hype: 0, close: 0, card: 0, ref: 0 },

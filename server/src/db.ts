@@ -53,6 +53,10 @@ db.exec(`
   );
 `);
 
+// Columns added after the first release.
+const predictionCols = (db.prepare('PRAGMA table_info(predictions)').all() as { name: string }[]).map((c) => c.name);
+if (!predictionCols.includes('scorer')) db.exec('ALTER TABLE predictions ADD COLUMN scorer TEXT');
+
 export function kvGet<T>(key: string): T | null {
   const row = db.prepare('SELECT value FROM kv WHERE key = ?').get(key) as { value: string } | undefined;
   return row ? (JSON.parse(row.value) as T) : null;

@@ -30,10 +30,10 @@ export function getMatch(): MatchData {
 
 export const kickoffMs = () => Date.parse(getMatch().kickoff);
 
-const DEFAULT_SCORE: ScoreState = { status: 'pre', home: 0, away: 0, minute: null, ftAt: null, updatedAt: 0 };
+const DEFAULT_SCORE: ScoreState = { status: 'pre', home: 0, away: 0, minute: null, ftAt: null, scorers: [], updatedAt: 0 };
 
 export function getScore(): ScoreState {
-  return kvGet<ScoreState>('score') ?? DEFAULT_SCORE;
+  return { ...DEFAULT_SCORE, ...kvGet<ScoreState>('score') };
 }
 export function setScore(s: ScoreState) {
   kvSet('score', s);
@@ -68,9 +68,11 @@ export function ratingsOpen(now = Date.now()) {
   return s.ftAt !== null && now < s.ftAt + RATINGS_WINDOW_MS;
 }
 
-function points(p: { home: number; away: number }, s: ScoreState) {
-  if (p.home === s.home && p.away === s.away) return 3;
-  return Math.sign(p.home - p.away) === Math.sign(s.home - s.away) ? 1 : 0;
+/** Exact score 3, correct result 1, plus 1 if the picked player scored (or "no goalscorer" in a 0–0). */
+function points(p: { home: number; away: number; scorer: string | null }, s: ScoreState) {
+  const base = p.home === s.home && p.away === s.away ? 3 : Math.sign(p.home - p.away) === Math.sign(s.home - s.away) ? 1 : 0;
+  const scorerHit = p.scorer === 'none' ? s.home + s.away === 0 : p.scorer !== null && s.scorers.includes(p.scorer);
+  return base + (scorerHit ? 1 : 0);
 }
 
 export function getRatings(): Record<string, RatingAgg> {
@@ -103,9 +105,9 @@ export function getPublicState(): PublicState {
   }
 
   const preds = db
-    .prepare('SELECT name, home, away, created_at FROM predictions ORDER BY created_at DESC LIMIT 1000')
-    .all() as { name: string; home: number; away: number; created_at: number }[];
-  const entries = preds.map((p) => ({ name: p.name, home: p.home, away: p.away, points: ft ? points(p, score) : null }));
+    .prepare('SELECT name, home, away, scorer, created_at FROM predictions ORDER BY created_at DESC LIMIT 1000')
+    .all() as { name: string; home: number; away: number; scorer: string | null; created_at: number }[];
+  const entries = preds.map((p) => ({ name: p.name, home: p.home, away: p.away, scorer: p.scorer, points: ft ? points(p, score) : null }));
   if (ft) entries.sort((a, b) => (b.points ?? 0) - (a.points ?? 0));
 
   const counts = db
@@ -113,6 +115,10 @@ export function getPublicState(): PublicState {
       "SELECT home || '-' || away AS score, COUNT(*) AS count FROM predictions GROUP BY home, away ORDER BY count DESC, home DESC LIMIT 12",
     )
     .all() as { score: string; count: number }[];
+
+  const scorerCounts = db
+    .prepare('SELECT scorer, COUNT(*) AS count FROM predictions WHERE scorer IS NOT NULL GROUP BY scorer ORDER BY count DESC LIMIT 12')
+    .all() as { scorer: string; count: number }[];
 
   const nerves = db
     .prepare("SELECT AVG(n.value) AS avg, COUNT(*) AS count FROM nerves n JOIN visitors v ON v.visitor_id = n.visitor_id WHERE v.side = 'barca'")
@@ -125,7 +131,7 @@ export function getPublicState(): PublicState {
     lineups: getLineups(),
     score,
     poll,
-    predictions: { open: predictionsOpen(), entries, counts },
+    predictions: { open: predictionsOpen(), entries, counts, scorerCounts },
     ratings: getRatings(),
     ratingsOpen: ratingsOpen(),
     reactions: getReactions(),
@@ -140,7 +146,7 @@ export function getMe(visitorId: string | undefined): MeState {
   const empty: MeState = { side: null, prediction: null, poll: null, ratings: {}, nerves: null, bingo: false };
   if (!visitorId) return empty;
   const side = db.prepare('SELECT side FROM visitors WHERE visitor_id = ?').get(visitorId) as { side: Side } | undefined;
-  const prediction = db.prepare('SELECT name, home, away FROM predictions WHERE visitor_id = ?').get(visitorId) as MeState['prediction'] | undefined;
+  const prediction = db.prepare('SELECT name, home, away, scorer FROM predictions WHERE visitor_id = ?').get(visitorId) as MeState['prediction'] | undefined;
   const poll = db.prepare('SELECT choice FROM poll WHERE visitor_id = ?').get(visitorId) as { choice: PollChoice } | undefined;
   const ratings = db.prepare('SELECT player_id, value FROM ratings WHERE visitor_id = ?').all(visitorId) as { player_id: string; value: number }[];
   const nerves = db.prepare('SELECT value FROM nerves WHERE visitor_id = ?').get(visitorId) as { value: number } | undefined;

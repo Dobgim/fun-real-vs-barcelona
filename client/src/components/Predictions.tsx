@@ -8,7 +8,7 @@ import { playClick } from '../lib/audio';
 import { confetti } from '../lib/fx';
 import { Button, OfflineNote, Section, SplitBar, pct } from './ui';
 import { ClubBadge } from './art/Players';
-import { Handshake } from './art/Icons';
+import { Ball, Handshake } from './art/Icons';
 
 export async function copyText(text: string) {
   try {
@@ -36,6 +36,8 @@ export function Predictions() {
   const [home, setHome] = useState(me.prediction?.home ?? 2);
   const [away, setAway] = useState(me.prediction?.away ?? 1);
   const [name, setName] = useState(me.prediction?.name ?? store.get('cn:name') ?? '');
+  const [scorer, setScorer] = useState(me.prediction?.scorer ?? '');
+  const scorerName = useScorerNames();
   const [editing, setEditing] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
@@ -46,6 +48,7 @@ export function Predictions() {
       setHome(me.prediction.home);
       setAway(me.prediction.away);
       setName(me.prediction.name);
+      setScorer(me.prediction.scorer ?? '');
     }
   }, [me.prediction]);
 
@@ -54,9 +57,9 @@ export function Predictions() {
     setError('');
     setBusy(true);
     try {
-      await post('/predictions', { name, home, away });
+      await post('/predictions', { name, home, away, scorer: scorer || null });
       store.set('cn:name', name.trim());
-      patchMe({ prediction: { name: name.trim(), home, away } });
+      patchMe({ prediction: { name: name.trim(), home, away, scorer: scorer || null } });
       refresh(); // show it on the leaderboard straight away; everyone else gets it via state:update
       setEditing(false);
       confetti({ count: 80, origin: { x: 0.5, y: 0.7 } });
@@ -70,7 +73,8 @@ export function Predictions() {
   const mine = me.prediction;
   const share = async () => {
     if (!mine) return;
-    const text = `⚽ El Clásico tonight — ${mine.name} predicts: Barça ${mine.home} – ${mine.away} Madrid. What's your score? ${window.location.origin}`;
+    const pick = mine.scorer ? ` (${mine.scorer === 'none' ? 'no goalscorer' : `${scorerName(mine.scorer)} to score`})` : '';
+    const text = `⚽ El Clásico tonight — ${mine.name} predicts: Barça ${mine.home} – ${mine.away} Madrid${pick}. What's your score? ${window.location.origin}`;
     if (await copyText(text)) {
       setCopied(true);
       setTimeout(() => setCopied(false), 2200);
@@ -104,11 +108,12 @@ export function Predictions() {
                   className="mt-1.5 block min-h-12 w-full rounded-xl border border-line bg-night px-4 text-base outline-none transition focus:border-gold"
                 />
               </label>
+              <ScorerPicker value={scorer} onChange={setScorer} />
               {error && <p className="text-sm text-[#ff7a92]">{error}</p>}
               <Button type="submit" variant="garnet" className="w-full text-base" disabled={busy || !name.trim()}>
                 <Lock size={16} aria-hidden /> {mine ? 'Update my prediction' : 'Lock in my prediction'}
               </Button>
-              <p className="text-xs text-muted">Exact score = 3 pts · correct result = 1 pt. Predictions close at kick-off.</p>
+              <p className="text-xs text-muted">Exact score = 3 pts · correct result = 1 pt · your player scores = +1. Predictions close at kick-off.</p>
             </form>
           ) : (
             <div className="text-center">
@@ -121,6 +126,11 @@ export function Predictions() {
                     {mine.away}
                   </p>
                   <p className="label text-xs text-muted">Barça – Madrid</p>
+                  {mine.scorer && (
+                    <p className="mt-3 inline-flex items-center gap-2 rounded-full bg-night px-3 py-1.5 text-sm">
+                      <Ball size={16} /> {mine.scorer === 'none' ? 'No goalscorer' : `${scorerName(mine.scorer)} to score`}
+                    </p>
+                  )}
                 </>
               ) : (
                 <p className="py-6 text-muted">{online ? 'Predictions closed at kick-off.' : 'Predictions need the live server.'}</p>
@@ -147,7 +157,7 @@ export function Predictions() {
           {winners.length > 0 && (
             <div className="mb-5 rounded-2xl bg-[linear-gradient(135deg,rgba(237,187,0,.2),rgba(165,0,68,.2))] p-4">
               <p className="label flex items-center gap-2 text-sm text-gold">
-                <Trophy size={18} aria-hidden /> {best === 3 ? 'Nailed the exact score' : 'Got the result right'}
+                <Trophy size={18} aria-hidden /> Top of the table · {best} pts
               </p>
               <p className="mt-1 font-display text-2xl font-extrabold">{winners.map((w) => w.name).join(', ')}</p>
             </div>
@@ -162,16 +172,35 @@ export function Predictions() {
               </span>
             ))}
           </div>
-          <ol className="mt-5 max-h-80 divide-y divide-line/60 overflow-y-auto pr-1">
+          {p.scorerCounts.length > 0 && (
+            <>
+              <p className="label mt-5 text-xs text-muted">Most backed to score</p>
+              <div className="mt-3 flex flex-wrap gap-2">
+                {p.scorerCounts.map((c) => (
+                  <span key={c.scorer} className="label inline-flex items-center gap-2 rounded-xl border border-line bg-night px-3 py-2 text-sm">
+                    {c.scorer.startsWith('away:') ? <ClubBadge team="away" size={18} /> : c.scorer.startsWith('home:') ? <ClubBadge team="home" size={18} /> : <Ball size={16} />}
+                    <span>{c.scorer === 'none' ? 'No goalscorer' : scorerName(c.scorer)}</span>
+                    <span className="text-muted">× {c.count}</span>
+                  </span>
+                ))}
+              </div>
+            </>
+          )}
+          <ol className="mt-5 max-h-96 divide-y divide-line/60 overflow-y-auto pr-1">
             {p.entries.map((e, i) => (
               <li key={i} className="flex items-center gap-3 py-2.5">
                 <span className="label w-6 text-xs text-muted tabular">{i + 1}</span>
-                <span className="min-w-0 flex-1 truncate font-medium">{e.name}</span>
+                <span className="min-w-0 flex-1">
+                  <span className="block truncate font-medium">{e.name}</span>
+                  {e.scorer && (
+                    <span className="block truncate text-xs text-muted">{e.scorer === 'none' ? 'No goalscorer' : `${scorerName(e.scorer)} to score`}</span>
+                  )}
+                </span>
                 <span className="font-display text-lg font-black tabular">
                   {e.home}–{e.away}
                 </span>
                 {e.points !== null && (
-                  <span className={`label w-12 rounded-md py-0.5 text-center text-xs ${e.points === 3 ? 'bg-gold text-night' : e.points === 1 ? 'bg-blau' : 'bg-white/5 text-muted'}`}>
+                  <span className={`label w-12 rounded-md py-0.5 text-center text-xs ${e.points >= 3 ? 'bg-gold text-night' : e.points > 0 ? 'bg-blau' : 'bg-white/5 text-muted'}`}>
                     {e.points} pt{e.points === 1 ? '' : 's'}
                   </span>
                 )}
@@ -182,6 +211,41 @@ export function Predictions() {
       </div>
       <Poll />
     </Section>
+  );
+}
+
+/** Maps player ids ("home:pedri") to display names from the current lineups. */
+function useScorerNames() {
+  const { lineups } = useStore().data;
+  const names = new Map(
+    (['home', 'away'] as const).flatMap((t) => [...lineups[t].players, ...lineups[t].subs].map((p) => [p.id, p.name] as const)),
+  );
+  return (id: string) => names.get(id) ?? id.split(':').pop()!.replace(/-/g, ' ');
+}
+
+function ScorerPicker({ value, onChange }: { value: string; onChange: (v: string) => void }) {
+  const { lineups } = useStore().data;
+  return (
+    <label className="block">
+      <span className="label text-xs text-muted">Who will score? (optional, +1 pt)</span>
+      <select
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        className="mt-1.5 block min-h-12 w-full rounded-xl border border-line bg-night px-3 text-base outline-none transition focus:border-gold"
+      >
+        <option value="">Pick a goalscorer…</option>
+        {(['home', 'away'] as const).map((t) => (
+          <optgroup key={t} label={t === 'home' ? 'Barça' : 'Madrid'}>
+            {[...lineups[t].players, ...lineups[t].subs].map((p) => (
+              <option key={p.id} value={p.id}>
+                {p.name}
+              </option>
+            ))}
+          </optgroup>
+        ))}
+        <option value="none">No goalscorer (0–0)</option>
+      </select>
+    </label>
   );
 }
 

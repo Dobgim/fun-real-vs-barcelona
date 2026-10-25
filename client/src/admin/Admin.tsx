@@ -20,6 +20,7 @@ export default function Admin() {
   const [score, setScore] = useState<ScoreState | null>(null);
   const [lineups, setLineups] = useState<Lineups | null>(null);
   const [minute, setMinute] = useState('');
+  const [goalScorer, setGoalScorer] = useState('');
   const [msg, setMsg] = useState<{ ok: boolean; text: string } | null>(null);
   const [busy, setBusy] = useState(false);
 
@@ -64,10 +65,18 @@ export default function Admin() {
     }
   };
 
-  const pushScore = async (home: number, away: number) => {
-    const r = await call<ScoreState>('/score', { home, away, minute: minute || null }, `Score ${home}–${away} sent`);
+  const pushScore = async (home: number, away: number, scorers = score?.scorers ?? []) => {
+    const r = await call<ScoreState>('/score', { home, away, minute: minute || null, scorers }, `Score ${home}–${away} sent`);
     if (r) setScore(r);
   };
+  const addGoal = (team: 'home' | 'away') => {
+    if (!score) return;
+    const scorers = goalScorer ? [...score.scorers, goalScorer] : score.scorers;
+    void pushScore(score.home + (team === 'home' ? 1 : 0), score.away + (team === 'away' ? 1 : 0), scorers);
+    setGoalScorer('');
+  };
+  const nameOf = (id: string) =>
+    lineups ? ([...lineups.home.players, ...lineups.home.subs, ...lineups.away.players, ...lineups.away.subs].find((p) => p.id === id)?.name ?? id) : id;
   const pushStatus = async (status: Status) => {
     if (status === 'ft' && !window.confirm('Blow the final whistle? This scores the predictions.')) return;
     const r = await call<ScoreState>('/status', { status, minute: minute || null }, `Status: ${status}`);
@@ -147,14 +156,45 @@ export default function Admin() {
           <Button variant="gold" className="w-full" disabled={busy} onClick={() => pushScore(score.home, score.away)}>
             <Save size={16} /> Send score
           </Button>
+          <label className="block">
+            <span className="label text-xs text-muted">Goalscorer for the next goal (optional)</span>
+            <select value={goalScorer} onChange={(e) => setGoalScorer(e.target.value)} className="mt-1 block min-h-12 w-full rounded-xl border border-line bg-night px-3 outline-none focus:border-gold">
+              <option value="">Not sure / own goal</option>
+              {lineups &&
+                (['home', 'away'] as const).map((t) => (
+                  <optgroup key={t} label={t === 'home' ? 'Barça' : 'Madrid'}>
+                    {[...lineups[t].players, ...lineups[t].subs].map((p) => (
+                      <option key={p.id} value={p.id}>
+                        {p.name}
+                      </option>
+                    ))}
+                  </optgroup>
+                ))}
+            </select>
+          </label>
           <div className="grid grid-cols-2 gap-2">
-            <Button variant="garnet" className="min-h-14" disabled={busy} onClick={() => pushScore(score.home + 1, score.away)}>
+            <Button variant="garnet" className="min-h-14" disabled={busy} onClick={() => addGoal('home')}>
               + Barça goal
             </Button>
-            <Button variant="white" className="min-h-14" disabled={busy} onClick={() => pushScore(score.home, score.away + 1)}>
+            <Button variant="white" className="min-h-14" disabled={busy} onClick={() => addGoal('away')}>
               + Madrid goal
             </Button>
           </div>
+          {score.scorers.length > 0 && (
+            <div className="flex flex-wrap items-center gap-2 text-sm">
+              <span className="label text-xs text-muted">Scorers:</span>
+              {score.scorers.map((id, i) => (
+                <button
+                  key={i}
+                  className="label min-h-9 rounded-lg border border-line px-2 text-xs hover:border-[#ff5c7a]"
+                  title="Remove"
+                  onClick={() => pushScore(score.home, score.away, score.scorers.filter((_, j) => j !== i))}
+                >
+                  {nameOf(id)} ×
+                </button>
+              ))}
+            </div>
+          )}
           <div>
             <p className="label mb-2 text-xs text-muted">Status · now {score.status}</p>
             <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">

@@ -172,13 +172,21 @@ app.post(
   '/api/predictions',
   route((req) => {
     const b = parse(
-      z.object({ visitorId, name, home: z.number().int().min(0).max(9), away: z.number().int().min(0).max(9) }),
+      z.object({
+        visitorId,
+        name,
+        home: z.number().int().min(0).max(9),
+        away: z.number().int().min(0).max(9),
+        scorer: z.string().max(80).nullable().optional(),
+      }),
       req.body,
     );
     if (!predictionsOpen()) throw new HttpError(403, 'Predictions closed at kick-off');
+    const scorer = b.scorer || null;
+    if (scorer && scorer !== 'none' && !ratablePlayerIds().has(scorer)) throw new HttpError(400, 'Pick a player from the lineups');
     db.prepare(
-      'INSERT INTO predictions (visitor_id, name, home, away, created_at) VALUES (?, ?, ?, ?, ?) ON CONFLICT(visitor_id) DO UPDATE SET name = excluded.name, home = excluded.home, away = excluded.away',
-    ).run(b.visitorId, b.name, b.home, b.away, Date.now());
+      'INSERT INTO predictions (visitor_id, name, home, away, scorer, created_at) VALUES (?, ?, ?, ?, ?, ?) ON CONFLICT(visitor_id) DO UPDATE SET name = excluded.name, home = excluded.home, away = excluded.away, scorer = excluded.scorer',
+    ).run(b.visitorId, b.name, b.home, b.away, scorer, Date.now());
     broadcastState();
   }),
 );
@@ -273,9 +281,27 @@ const minute = z.string().trim().max(8).nullable().optional();
 app.post(
   '/api/admin/score',
   route((req) => {
-    const b = parse(z.object({ home: z.number().int().min(0).max(30), away: z.number().int().min(0).max(30), minute }), req.body);
+    const b = parse(
+      z.object({
+        home: z.number().int().min(0).max(30),
+        away: z.number().int().min(0).max(30),
+        minute,
+        scorers: z.array(z.string().max(80)).max(30).optional(),
+      }),
+      req.body,
+    );
     const prev = getScore();
-    return saveScore({ ...prev, home: b.home, away: b.away, minute: b.minute === undefined ? prev.minute : b.minute || null, updatedAt: Date.now() }, prev);
+    return saveScore(
+      {
+        ...prev,
+        home: b.home,
+        away: b.away,
+        minute: b.minute === undefined ? prev.minute : b.minute || null,
+        scorers: b.scorers ?? prev.scorers,
+        updatedAt: Date.now(),
+      },
+      prev,
+    );
   }),
 );
 
