@@ -84,10 +84,11 @@ after editing.
 
 ## Artwork
 
-The site uses original SVG drawings: illustrated players (back view with name and number) and
-monogram badges in club colours. No official crests, the La Liga logo or player photos are bundled,
-because those are trademarked/copyrighted. If you have the rights to use real images, drop them in
-`client/public/art/` and list them in `client/src/art.config.ts`; they replace the drawings everywhere.
+`client/public/art/` holds the real club crests (from the clubs' Wikipedia pages; trademarks of
+FC Barcelona and Real Madrid CF, used to identify the teams) and player photos from Wikimedia Commons
+under CC BY / CC BY-SA licences. The licences require credit, which the footer and each "Players to
+watch" card show; keep it if you change the photos. Paths are set in `client/src/art.config.ts`, and the
+players to watch (with photo credits) live in `server/data/match.json` under `playersToWatch`.
 
 ## API
 

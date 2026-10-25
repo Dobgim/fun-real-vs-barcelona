@@ -29,8 +29,8 @@ export function Hero() {
       <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_50%_-10%,rgba(237,187,0,.18),transparent_55%),radial-gradient(ellipse_at_0%_100%,rgba(0,77,152,.45),transparent_55%),radial-gradient(ellipse_at_100%_100%,rgba(255,255,255,.12),transparent_50%)]" />
       {/* the three stars of each side */}
       <div className="pointer-events-none absolute inset-x-0 bottom-0 flex h-[78%] items-end justify-between [mask-image:linear-gradient(to_top,black_55%,transparent)] md:h-[92%]">
-        <TeamArt kit="home" className="h-full w-[52%] max-w-[560px] -translate-x-[18%] opacity-30 sm:opacity-45 md:translate-x-0 lg:opacity-80" />
-        <TeamArt kit="away" className="h-full w-[52%] max-w-[560px] translate-x-[18%] opacity-30 sm:opacity-45 md:translate-x-0 lg:opacity-80" />
+        <TeamArt kit="home" className="h-full w-[52%] max-w-[560px] opacity-55 sm:opacity-60 lg:opacity-80" />
+        <TeamArt kit="away" className="h-full w-[52%] max-w-[560px] opacity-55 sm:opacity-60 lg:opacity-80" />
       </div>
       <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(to_bottom,transparent_40%,#070B1F)]" />
 

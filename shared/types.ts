@@ -43,6 +43,15 @@ export interface FamousWin {
   date: string;
 }
 
+export interface PlayerToWatch {
+  team: 'home' | 'away';
+  name: string; // must match the name used in lineups / gameRatings
+  position: string;
+  photo: string; // path under client/public
+  note: string;
+  credit: { author: string; license: string; url: string };
+}
+
 export interface MatchData {
   title: string;
   competition: string;
@@ -64,6 +73,7 @@ export interface MatchData {
   winProbability: { home: number; draw: number; away: number };
   gameRatings: Record<string, number>; // EA Sports FC 27 overall, by player name
   lineups: Omit<Lineups, 'confirmed'>;
+  playersToWatch: PlayerToWatch[];
   sources: { label: string; url: string }[];
 }
 

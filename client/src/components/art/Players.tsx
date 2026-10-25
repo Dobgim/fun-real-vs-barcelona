@@ -1,6 +1,5 @@
-// Illustrated players (back view, name + number) and original monogram badges.
-// These are drawings in club colours, not official crests or photos. To use licensed
-// images instead, set the paths in src/art.config.ts.
+// Club crests and player photo collages. The images come from src/art.config.ts; the
+// drawn players and monogram badges below are the fallback when a path is left empty.
 import { useId } from 'react';
 import { ART } from '../../art.config';
 
@@ -145,10 +144,20 @@ export function TeamArt({ kit, className = '' }: { kit: Kit; className?: string 
   const custom = kit === 'home' ? ART.homePlayers : ART.awayPlayers;
   if (custom.length) {
     return (
-      <div className={`flex items-end justify-center gap-0 ${className}`} aria-hidden>
+      <div className={`relative flex items-end justify-center ${className}`} aria-hidden>
         {custom.slice(0, 3).map((src, i) => (
-          <img key={src} src={src} alt="" className={`h-full w-1/3 object-contain object-bottom ${i === 1 ? 'z-10 scale-110' : 'opacity-80'}`} />
+          <img
+            key={src}
+            src={src}
+            alt=""
+            loading="lazy"
+            className={`object-cover object-top [mask-image:linear-gradient(to_right,transparent,black_22%,black_78%,transparent)] ${
+              i === 1 ? 'z-10 -mx-[7%] h-full w-[46%]' : 'h-[86%] w-[38%] opacity-75 saturate-[.8]'
+            }`}
+          />
         ))}
+        {/* team-colour wash so the photos sit in the night palette */}
+        <div className={`absolute inset-0 z-20 mix-blend-color ${kit === 'home' ? 'bg-[linear-gradient(90deg,#004D98,#A50044)] opacity-25' : 'bg-[#C9A227] opacity-15'}`} />
       </div>
     );
   }
@@ -165,7 +174,8 @@ export function TeamArt({ kit, className = '' }: { kit: Kit; className?: string 
 export function ClubBadge({ team, size = 64, className = '' }: { team: Kit; size?: number | string; className?: string }) {
   const uid = useId().replace(/:/g, '');
   const custom = team === 'home' ? ART.homeBadge : ART.awayBadge;
-  if (custom) return <img src={custom} alt="" width={size as number} height={size as number} className={`object-contain ${className}`} />;
+  if (custom)
+    return <img src={custom} alt="" width={size} height={size} className={`shrink-0 object-contain drop-shadow-[0_2px_6px_rgba(0,0,0,.45)] ${className}`} />;
 
   if (team === 'home') {
     return (

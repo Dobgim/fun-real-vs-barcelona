@@ -7,6 +7,7 @@ import { Hero } from './components/Hero';
 import { FullTimeBanner } from './components/FullTime';
 import { HeadToHead } from './components/HeadToHead';
 import { Lineups } from './components/Lineups';
+import { PlayersToWatch } from './components/PlayersToWatch';
 import { Predictions } from './components/Predictions';
 import { MatchZone } from './components/MatchZone';
 import { Bingo } from './components/Bingo';
@@ -27,6 +28,7 @@ function Site() {
         <Hero />
         <FullTimeBanner />
         <HeadToHead />
+        <PlayersToWatch />
         <Lineups />
         <Predictions />
         <MatchZone />

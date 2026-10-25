@@ -42,7 +42,7 @@ export function FanGate({ onClose }: { onClose: () => void }) {
     <div className="fixed inset-0 z-[70] overflow-y-auto bg-night" role="dialog" aria-modal="true" aria-labelledby="gate-title">
       <div className="stripes h-1.5 w-full" />
       {/* background art: three stars per side, faded */}
-      <div className="pointer-events-none fixed inset-x-0 bottom-0 flex h-[55vh] justify-between opacity-25 [mask-image:linear-gradient(to_top,black_30%,transparent)] sm:opacity-35">
+      <div className="pointer-events-none fixed inset-x-0 bottom-0 flex h-[55vh] justify-between opacity-40 [mask-image:linear-gradient(to_top,black_30%,transparent)] sm:opacity-50">
         <TeamArt kit="home" className="h-full w-1/2 max-w-[520px]" />
         <TeamArt kit="away" className="h-full w-1/2 max-w-[520px]" />
       </div>

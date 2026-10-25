@@ -59,7 +59,13 @@ export function Lineups() {
       <div className="grid gap-5 lg:grid-cols-2">
         {(['home', 'away'] as const).map((t) => (
           <div key={t} className={tab === t ? '' : 'hidden lg:block'}>
-            <TeamSheet team={t} lineup={lineups[t]} ratings={match.gameRatings} name={t === 'home' ? match.home.name : match.away.name} />
+            <TeamSheet
+              team={t}
+              lineup={lineups[t]}
+              ratings={match.gameRatings}
+              photos={Object.fromEntries(match.playersToWatch.map((p) => [p.name, p.photo]))}
+              name={t === 'home' ? match.home.name : match.away.name}
+            />
           </div>
         ))}
       </div>
@@ -68,7 +74,19 @@ export function Lineups() {
   );
 }
 
-function TeamSheet({ team, lineup, ratings, name }: { team: 'home' | 'away'; lineup: Lineup; ratings: Record<string, number>; name: string }) {
+function TeamSheet({
+  team,
+  lineup,
+  ratings,
+  photos,
+  name,
+}: {
+  team: 'home' | 'away';
+  lineup: Lineup;
+  ratings: Record<string, number>;
+  photos: Record<string, string>;
+  name: string;
+}) {
   const doubts = lineup.players.filter((p) => p.doubt);
   return (
     <div className="panel overflow-hidden">
@@ -87,7 +105,7 @@ function TeamSheet({ team, lineup, ratings, name }: { team: 'home' | 'away'; lin
           <PitchLines />
           <ClubBadge team={team} size={160} className="pointer-events-none absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 opacity-[0.08]" />
           {lineup.players.slice(0, 11).map((p, i) => (
-            <PlayerDot key={p.id + i} player={p} team={team} rating={ratings[p.name]} pos={SLOTS[i]} />
+            <PlayerDot key={p.id + i} player={p} team={team} rating={ratings[p.name]} photo={photos[p.name]} pos={SLOTS[i]} />
           ))}
         </div>
       </div>
@@ -127,16 +145,16 @@ function TeamSheet({ team, lineup, ratings, name }: { team: 'home' | 'away'; lin
   );
 }
 
-function PlayerDot({ player, team, rating, pos }: { player: Player; team: 'home' | 'away'; rating?: number; pos: [number, number] }) {
+function PlayerDot({ player, team, rating, photo, pos }: { player: Player; team: 'home' | 'away'; rating?: number; photo?: string; pos: [number, number] }) {
   return (
     <div className="absolute flex w-[22%] -translate-x-1/2 -translate-y-1/2 flex-col items-center" style={{ left: `${pos[0]}%`, top: `${pos[1]}%` }}>
       <div className="relative">
         <div
-          className={`grid h-11 w-11 place-items-center rounded-full font-display text-lg font-black shadow-[0_4px_12px_rgba(0,0,0,.4)] ring-2 sm:h-14 sm:w-14 sm:text-xl ${
+          className={`grid h-11 w-11 place-items-center overflow-hidden rounded-full font-display text-lg font-black shadow-[0_4px_12px_rgba(0,0,0,.4)] ring-2 sm:h-14 sm:w-14 sm:text-xl ${
             team === 'home' ? 'bg-[linear-gradient(90deg,#004D98_50%,#A50044_50%)] text-white ring-gold' : 'bg-white text-[#0F1A4A] ring-[#C9A227]'
           }`}
         >
-          {initials(player.name)}
+          {photo ? <img src={photo} alt="" className="h-full w-full rounded-full object-cover object-top" /> : initials(player.name)}
         </div>
         {rating !== undefined && (
           <span className="absolute -right-2.5 -top-2 rounded-md bg-gold px-1 font-display text-xs font-black leading-5 text-night tabular sm:text-sm" title="EA Sports FC 27 overall">

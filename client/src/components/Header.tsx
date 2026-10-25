@@ -7,6 +7,7 @@ import { ClubBadge } from './art/Players';
 
 const NAV = [
   ['record', 'Record'],
+  ['players', 'Players'],
   ['lineups', 'Lineups'],
   ['predict', 'Predict'],
   ['live', 'Match zone'],
